@@ -26,17 +26,15 @@ const login = (req, res) => {
 
     if (user) {
       if (user.password === password) {
-        let token = jwt.sign({ id: user.email }, secret, {
+        const token = jwt.sign({ email: user.email }, secret, {
           algorithm: "HS256",
-          expiresIn: 300,
+          expiresIn: 60, // 2 mins
         });
-
-        const decoded = jwt.decode(token);
 
         res.send({
           status: 200,
           message: "success",
-          data: { token, expire: decoded.exp },
+          data: { token },
         });
       } else {
         res.send({ status: 500, message: "password not match" });
@@ -48,7 +46,18 @@ const login = (req, res) => {
     res.send({ status: 500, message: "something is missing!" });
   }
 };
+const refreshToken = (req, res) => {
+  const { token } = req.body;
+  const { email } = jwt.decode(token);
+  const newToken = jwt.sign({ email }, secret, {
+    algorithm: "HS256",
+    expiresIn: 60, //2 mins
+  });
+
+  res.status(200).send({ message: "Token refreshed", data: { newToken } });
+};
 
 routes.post("/login", login);
+routes.post("/refreshToken", refreshToken);
 
 module.exports = routes;
