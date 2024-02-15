@@ -26,12 +26,18 @@ const login = (req, res) => {
 
     if (user) {
       if (user.password === password) {
-        const token = jwt.sign({ id: user.email }, secret, {
+        let token = jwt.sign({ id: user.email }, secret, {
           algorithm: "HS256",
-          expiresIn: 300, // 5 minutes
-          //   allowInsecureKeySizes: true,
+          expiresIn: 300,
         });
-        res.send({ status: 200, message: "success", data: { token } });
+
+        const decoded = jwt.decode(token);
+
+        res.send({
+          status: 200,
+          message: "success",
+          data: { token, expire: decoded.exp },
+        });
       } else {
         res.send({ status: 500, message: "password not match" });
       }
